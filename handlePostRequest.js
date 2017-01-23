@@ -1,10 +1,12 @@
 var express = require('express'),
     app = express(),
-    engines = require('consolidate');
+    engines = require('consolidate'),
+    bodyParser = require('body-parser');
 
 app.engine('html', engines.nunjucks);
 app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
+app.use(bodyParser.urlencoded({ extended: true })); 
 
 // Handler for internal server errors
 function errorHandler(err, req, res, next) {
@@ -13,11 +15,18 @@ function errorHandler(err, req, res, next) {
     res.status(500).render('error_template', { error: err });
 }
 
-app.get('/:name', function(req, res, next) {
-    var name = req.params.name;
-    var getvar1 = req.query.getvar1;
-    var getvar2 = req.query.getvar2;
-    res.render('handleGetRequest', { name : name, getvar1 : getvar1, getvar2 : getvar2 });
+app.get('/', function(req, res, next) {
+    res.render('fruitPicker', { 'fruits' : [ 'apple', 'orange', 'banana', 'peach' ] });
+});
+
+app.post('/favorite_fruit', function(req, res, next) {
+    var favorite = req.body.fruit;
+    if (typeof favorite == 'undefined') {
+        next('Please choose a fruit!');
+    }
+    else {
+        res.send("Your favorite fruit is " + favorite);
+    }
 });
 
 app.use(errorHandler);
